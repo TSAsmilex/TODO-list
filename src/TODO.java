@@ -1,11 +1,30 @@
 import java.util.ArrayList;
 
 enum Status {
-    PENDING,
-    STARTED,
-    COMPLETED
+    PENDING (1),
+    STARTED (2),
+    COMPLETED (3);
+
+    private final int value;
+
+    private Status(int s) {
+        value = s;
+    }
+
+    public boolean equals(Status other) {
+        return value == other.value;
+    }
+
+    public static int minValue() {
+        return 1;
+    }
+    public static int maxValue() {
+        return 3;
+    }
 }
 
+
+// TODO cambiar las tres listas separadas por una única, de Task {String, Status}
 public class TODO {
     ArrayList<String> pending   = new ArrayList<>();
     ArrayList<String> completed = new ArrayList<>();
@@ -30,6 +49,19 @@ public class TODO {
     }
 
 
+    public void delete (int index) {
+        if (index < pending.size()) {
+            pending.remove(index);
+        }
+        else if (index < pending.size() + started.size()) {
+            started.remove(index - pending.size());
+        }
+        else if (index < pending.size() + started.size() + completed.size()) {
+            completed.remove(index - pending.size() - started.size());
+        }
+    }
+
+
     public void deleteCompleted () {
         completed.clear();
     }
@@ -43,30 +75,43 @@ public class TODO {
         }
     }
 
+    public void modify(int index, Status status) {
+
+    }
 
     public boolean empty() {
-        return this.completed.size() + this.pending.size() + this.started.size() == 0;
+        return total() == 0;
+    }
+
+    public int total() {
+        return this.completed.size() + this.pending.size() + this.started.size();
     }
 
 
     public void print() {
+        int count = 0;
+
         if (pending.size() > 0) {
             System.out.println("Pending:");
             for (int i = 0; i < pending.size(); i++) {
-                System.out.println("   [" + (i+1) + "] " + pending.get(i));
+                count++;
+                System.out.println("   [" + count + "] " + pending.get(i));
             }
         }
 
         if (started.size() > 0) {
             System.out.println("Started:");
             for (int i = 0; i < started.size(); i++) {
-                System.out.println("\t[" + (i+1) + "] " + started.get(i));
+                count++;
+                System.out.println("\t[" + count + "] " + started.get(i));
             }
         }
+
         if (completed.size() > 0) {
             System.out.println("Completed:");
             for (int i = 0; i < completed.size(); i++) {
-                System.out.println("\t[" + (i+1) + "] " + completed.get(i));
+                count++;
+                System.out.println("\t[" + count + "] " + completed.get(i));
             }
         }
     }

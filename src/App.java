@@ -2,9 +2,8 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class App {
+    static TODO todolist = new TODO();
     public static void main(String[] args) throws Exception {
-        var todolist = new TODO();
-
         System.out.print("¡Hola, persona! ");
         boolean exit = false;
 
@@ -42,18 +41,83 @@ public class App {
             }
 
             switch (option) {
-                case 1 -> {
-                    System.out.print("¿De qué trata la tarea?\n> ");
-                    scan.nextLine();
-                    String task = scan.nextLine();
-                    todolist.add(task, Status.PENDING);
-                }
-                case 4 -> {
-                    exit = true;
-                }
+                case 1 -> addTask(scan);
+                case 2 -> modifyTask(scan);
+                case 3 -> deleteTask(scan);
+                case 4 -> exit = true;
             }
         }
     }
+
+
+    public static void addTask(Scanner scan) {
+        System.out.print("¿De qué trata la tarea?\n> ");
+        scan.nextLine();
+        String task = scan.nextLine();
+        todolist.add(task, Status.PENDING);
+    }
+
+
+    public static void modifyTask (Scanner scan) {
+        System.out.println("¿Qué tarea ha recibido cambios?");
+
+        int index = 0, state = 0;
+
+        try {
+            System.out.print("> ");
+            index = scan.nextInt();
+        }
+        catch (InputMismatchException e) {
+            scan.nextLine();
+        }
+
+        if (index <= 0 || index > todolist.total()) {
+            System.out.println("No existe esa tarea.");
+        }
+        else {
+            System.out.println(
+                    "¿Cuál es su nuevo estado?\n"
+                +   "   1) Pendiente\n"
+                +   "   2) En progreso\n"
+                +   "   3) Completada\n"
+            );
+
+            try {
+                System.out.print("> ");
+                state = scan.nextInt();
+            }
+            catch (InputMismatchException e) {
+                scan.nextLine();
+            }
+        }
+
+        if (state < Status.minValue() || state > Status.maxValue()) {
+            System.out.println("No existe ese estado.");
+        }
+        else {
+            Status status = Status.values()[state];
+            todolist.modify(index, status);
+        }
+
+
+    }
+
+
+    static void deleteTask(Scanner scan) {
+        System.out.println("¿Qué tarea quieres eliminar?");
+        int index = -1;
+
+        try {
+            index = scan.nextInt();
+            System.out.print("> ");
+        }
+        catch (InputMismatchException e) {
+            scan.nextLine();
+        }
+
+        todolist.delete(index-1);
+    }
+
 
     static void clearScreen() {
         System.out.print("\033[H\033[2J");
