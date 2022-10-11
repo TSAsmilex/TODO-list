@@ -47,6 +47,14 @@ public class App {
         var option = MenuOptions.EXIT;
         Exception error = null;
 
+        try {
+            todolist.loadFromFile();
+        }
+        catch (Exception e) {
+            System.err.print("No se han podido cargar las tareas correctamente.");
+            e.printStackTrace();
+            todolist.clear();
+        }
 
         do {
             clearScreen();
@@ -61,6 +69,10 @@ public class App {
             }
             else {
                 System.out.println("Todavía no tienes tareas pendientes.");
+            }
+
+            if (todolist.size() > 0) {
+                todolist.saveToFile();
             }
 
             System.out.println("\n¿Qué quieres hacer?");

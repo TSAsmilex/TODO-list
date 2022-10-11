@@ -1,9 +1,17 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class TODO {
+    private static String filepath = "./tasks/tasks.csv";
     HashSet<Task> tasks = new HashSet<Task>();
+
 
     public void add (Task task) {
         tasks.add(task);
@@ -52,6 +60,11 @@ public class TODO {
     }
 
 
+    public void clear() {
+        tasks.clear();
+    }
+
+
     public int size() {
         return tasks.size();
     }
@@ -85,5 +98,48 @@ public class TODO {
                 System.out.println("\t[" + task.getId() + "] " + task.getDescription());
             }
         }
+    }
+
+
+    public boolean saveToFile() throws IOException {
+        String output = this.tasks.stream()
+            .map(task -> new String (
+                task.getId() + ";" + task.getDescription() + ";" + task.getStatus().getValue()
+            )).collect(Collectors.joining("\n"));
+
+        File csvFile = new File(TODO.filepath);
+
+        if (!csvFile.exists()) {
+            csvFile.getParentFile().mkdirs();
+            csvFile.createNewFile();
+        }
+
+        try (PrintWriter pw = new PrintWriter(csvFile)) {
+            pw.println(output);
+        }
+
+        return csvFile.exists();
+    }
+
+    public boolean loadFromFile() throws IOException, NumberFormatException {
+        File csvFile = new File(TODO.filepath);
+
+        if (!csvFile.exists()) {
+            return false;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] taskString = line.split(";");
+                Task task = new Task(
+                    taskString[1],
+                    Status.fromValue(Integer.parseInt(taskString[2]))
+                );
+                this.add(task);
+            }
+        }
+
+        return true;
     }
 }

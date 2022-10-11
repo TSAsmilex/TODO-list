@@ -49,6 +49,12 @@ public class Task {
         this.id          = nextId++;
     }
 
+    public Task (String description, Status status) {
+        this.description = description;
+        this.status      = status;
+        this.id          = nextId++;
+    }
+
     public String getDescription() {
         return description;
     }
