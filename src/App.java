@@ -43,17 +43,16 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         System.out.print("¡Hola, persona! ");
+
         var option = MenuOptions.EXIT;
         Exception error = null;
 
 
         do {
-            if (error == null) {
-                clearScreen();
-            }
-            else {
-                System.err.println("\nSe ha producido un error. Motivo:");
-                System.err.println(error.getMessage() + "\n");
+            clearScreen();
+
+            if  (error != null) {
+                System.err.println("Se ha producido un error. Motivo:\t" + error.getMessage() + "\n");
             }
 
             if (!todolist.empty()) {
@@ -71,10 +70,11 @@ public class App {
             error = null;
 
             try {
+                System.out.print("> ");
                 option = MenuOptions.fromValue(scan.nextInt());
             }
             catch (InputMismatchException e) {
-                error = e;
+                error = new InputMismatchException("Introduce un comando válido.");
             }
 
             switch (option) {
@@ -101,12 +101,12 @@ public class App {
                 case DELETE_COMPLETED -> todolist.deleteCompleted();
                 case EXIT             -> System.out.println("¡Hasta luego!");
             }
-        } while (option != MenuOptions.EXIT);
+        } while (option != MenuOptions.EXIT || error != null);
     }
 
 
     public static void newTask(Scanner scan) {
-        System.out.print("¿De qué trata la tarea?\n> ");
+        System.out.print("\n¿De qué trata la tarea?\n> ");
         scan.nextLine();
         String description = scan.nextLine();
         todolist.add(new Task(description));
@@ -114,7 +114,7 @@ public class App {
 
 
     public static boolean updateStatusTask (Scanner scan) throws InputMismatchException {
-        System.out.println("¿Qué tarea ha recibido cambios?");
+        System.out.println("\n¿Qué tarea ha recibido cambios?");
 
         int id = 0;
 
@@ -123,14 +123,14 @@ public class App {
             id = scan.nextInt();
         }
         catch (InputMismatchException e) {
-            throw e;
+            throw new InputMismatchException("Introduce un número.");
         }
 
         if (!todolist.get(id).isPresent()) {
-            throw new InputMismatchException("No existe una tarea con ese ID");
+            throw new InputMismatchException("No existe una tarea con ese ID.");
         }
 
-        System.out.println("¿Cuál es su nuevo estado?");
+        System.out.println("\n¿Cuál es su nuevo estado?");
         Status.printToMenu();
 
         Status state = null;
@@ -148,7 +148,7 @@ public class App {
 
 
     static boolean deleteTask(Scanner scan) {
-        System.out.println("¿Qué tarea quieres eliminar?");
+        System.out.println("\n¿Qué tarea quieres eliminar?");
         System.out.print("> ");
 
         try {
