@@ -1,4 +1,5 @@
 import java.util.HashSet;
+import java.util.Optional;
 
 
 public class TODO {
@@ -8,6 +9,10 @@ public class TODO {
         tasks.add(task);
     }
 
+
+    public Optional<Task> get (int id) {
+        return tasks.stream().filter(t -> t.getId() == id).findFirst();
+    }
 
     public boolean delete (int id) {
         return tasks.removeIf(task -> task.getId() == id);
@@ -20,13 +25,12 @@ public class TODO {
 
 
     public boolean edit (int id, String description) {
-        for (Task task : tasks) {
-            if (task.getId() == id) {
-                task.setDescription(description);
-                return true;
-            }
-        }
+        Optional<Task> task = get(id);
 
+        if (task.isPresent()) {
+            task.get().setDescription(description);
+            return true;
+        }
         return false;
     }
 
@@ -60,7 +64,7 @@ public class TODO {
             System.out.println("\t[" + task.getId() + "] " + task.getDescription());
         }
 
-        var inProgress = tasks.stream().filter(task -> task.getStatus().equals(Status.INPROGRESS)).toList();
+        var inProgress = tasks.stream().filter(task -> task.getStatus().equals(Status.IN_PROGRESS)).toList();
         System.out.println("En progreso: \n");
         for (var task : inProgress) {
             System.out.println("\t[" + task.getId() + "] " + task.getDescription());

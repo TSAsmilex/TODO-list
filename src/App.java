@@ -1,14 +1,49 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+enum MenuOptions {
+    NEW_TASK(1),
+    UPDATE_STATUS_TASK(2),
+    DELETE_TASK(3),
+    EXIT(4);
+
+    private final int value;
+
+    private MenuOptions(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public static MenuOptions fromValue(int value) {
+        for (MenuOptions option : MenuOptions.values()) {
+            if (option.getValue() == value) {
+                return option;
+            }
+        }
+
+        throw new InputMismatchException("Invalid option");
+    }
+
+    public static void printMenu() {
+        System.out.println("   1) New task");
+        System.out.println("   2) Update task");
+        System.out.println("   3) Delete task");
+        System.out.println("   4) Exit");
+    }
+}
+
+
 public class App {
     static TODO todolist = new TODO();
+
     public static void main(String[] args) throws Exception {
         System.out.print("¡Hola, persona! ");
-        boolean exit = false;
+        var option = MenuOptions.EXIT;
 
-        while (!exit) {
-
+        while (option != MenuOptions.EXIT) {
             clearScreen();
 
             if (!todolist.empty()) {
@@ -19,103 +54,99 @@ public class App {
                 System.out.print("Todavía no tienes tareas pendientes.\n");
             }
 
-            System.out.print(
-                    "\n¿Qué quieres hacer?\n"
-                +   "   1) Nueva tarea\n"
-                +   "   2) Cambiar estado\n"
-                +   "   3) Eliminar\n"
-                +   "   4) Salir\n"
-            );
+            System.out.println("¿Qué quieres hacer?\n");
+            MenuOptions.printMenu();
 
             Scanner scan = new Scanner(System.in);
-            int option = 0;
 
             try {
-                do {
-                    System.out.print("> ");
-                    option = scan.nextInt();
-                } while (option < 1 || option > 4);
+                option = MenuOptions.fromValue(scan.nextInt());
             }
             catch (InputMismatchException e) {
-                scan.nextLine();
+                System.out.println("Opción inválida");
+                continue;
             }
 
             switch (option) {
-                case 1 -> addTask(scan);
-                case 2 -> modifyTask(scan);
-                case 3 -> deleteTask(scan);
-                case 4 -> exit = true;
+                case NEW_TASK -> newTask(scan);
+
+                case UPDATE_STATUS_TASK -> {
+                    try {
+                        updateStatusTask(scan);
+                    }
+                    catch (InputMismatchException e) {
+                        System.out.println("Se ha producido un error. Motivo:");
+                        System.out.println(e.getMessage());
+                    }
+                }
+
+                case DELETE_TASK -> {
+                    try {
+                        deleteTask(scan);
+                    }
+                    catch (InputMismatchException e) {
+                        System.out.println("Se ha producido un error. Motivo:");
+                        System.out.println(e.getMessage());
+                    }
+                }
             }
         }
     }
 
 
-    public static void addTask(Scanner scan) {
+    public static void newTask(Scanner scan) {
         System.out.print("¿De qué trata la tarea?\n> ");
         scan.nextLine();
-        String task = scan.nextLine();
-        todolist.add(task, Status.PENDING);
+        String description = scan.nextLine();
+        todolist.add(new Task(description));
     }
 
 
-    public static void modifyTask (Scanner scan) {
+    public static boolean updateStatusTask (Scanner scan) throws InputMismatchException {
         System.out.println("¿Qué tarea ha recibido cambios?");
 
-        int index = 0, state = 0;
+        int id = 0;
 
         try {
             System.out.print("> ");
-            index = scan.nextInt();
+            id = scan.nextInt();
         }
         catch (InputMismatchException e) {
-            scan.nextLine();
+            throw e;
         }
 
-        if (index <= 0 || index > todolist.total()) {
-            System.out.println("No existe esa tarea.");
-        }
-        else {
-            System.out.println(
-                    "¿Cuál es su nuevo estado?\n"
-                +   "   1) Pendiente\n"
-                +   "   2) En progreso\n"
-                +   "   3) Completada\n"
-            );
-
-            try {
-                System.out.print("> ");
-                state = scan.nextInt();
-            }
-            catch (InputMismatchException e) {
-                scan.nextLine();
-            }
+        if (!todolist.get(id).isPresent()) {
+            throw new InputMismatchException("No existe una tarea con ese ID");
         }
 
-        if (state < Status.minValue() || state > Status.maxValue()) {
-            System.out.println("No existe ese estado.");
+        System.out.println("¿Cuál es su nuevo estado?");
+        Status.printToMenu();
+
+        Status state = null;
+
+        try {
+            System.out.print("> ");
+            state = Status.fromValue(scan.nextInt());
         }
-        else {
-            Status status = Status.values()[state];
-            todolist.modify(index, status);
+        catch (InputMismatchException e) {
+            throw new InputMismatchException("No existe un estado válido con dicho valor");
         }
 
-
+        return todolist.updateStatus(id, state);
     }
 
 
-    static void deleteTask(Scanner scan) {
+    static boolean deleteTask(Scanner scan) {
         System.out.println("¿Qué tarea quieres eliminar?");
-        int index = -1;
+        System.out.print("> ");
 
         try {
-            index = scan.nextInt();
-            System.out.print("> ");
+            int id = scan.nextInt();
+            return todolist.delete(id);
         }
         catch (InputMismatchException e) {
-            scan.nextLine();
+            throw e;
         }
-
-        todolist.delete(index-1);
     }
 
 

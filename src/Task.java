@@ -1,6 +1,8 @@
+import java.util.InputMismatchException;
+
 enum Status {
     PENDING (1),
-    INPROGRESS (2),
+    IN_PROGRESS (2),
     COMPLETED (3);
 
     private final int value;
@@ -13,11 +15,24 @@ enum Status {
         return value == other.value;
     }
 
-    public static int minValue() {
-        return 1;
+    public int getValue() {
+        return value;
     }
-    public static int maxValue() {
-        return 3;
+
+    public static Status fromValue(int value) {
+        for (Status status : Status.values()) {
+            if (status.getValue() == value) {
+                return status;
+            }
+        }
+
+        throw new InputMismatchException("Invalid status");
+    }
+
+    public static void printToMenu() {
+        System.out.println("   1) No iniciada");
+        System.out.println("   2) En progreso");
+        System.out.println("   3) Completada");
     }
 }
 
