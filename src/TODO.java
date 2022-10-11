@@ -59,21 +59,31 @@ public class TODO {
 
     public void print() {
         var pending = tasks.stream().filter(task -> task.getStatus().equals(Status.PENDING)).toList();
-        System.out.println("Pendientes: \n");
-        for (var task : pending) {
-            System.out.println("\t[" + task.getId() + "] " + task.getDescription());
+
+        if (!pending.isEmpty()) {
+            System.out.println("Pendientes:");
+            for (var task : pending) {
+                System.out.println("\t[" + task.getId() + "] " + task.getDescription());
+            }
         }
 
         var inProgress = tasks.stream().filter(task -> task.getStatus().equals(Status.IN_PROGRESS)).toList();
-        System.out.println("En progreso: \n");
-        for (var task : inProgress) {
-            System.out.println("\t[" + task.getId() + "] " + task.getDescription());
+
+        if (!inProgress.isEmpty()) {
+            System.out.println("En progreso:");
+
+            for (var task : inProgress) {
+                System.out.println("\t[" + task.getId() + "] " + task.getDescription());
+            }
         }
 
         var completed = tasks.stream().filter(task -> task.getStatus().equals(Status.COMPLETED)).toList();
-        System.out.println("Completadas: \n");
-        for (var task : completed) {
-            System.out.println("\t[" + task.getId() + "] " + task.getDescription());
+        if (!completed.isEmpty()) {
+            System.out.println("Completadas:");
+
+            for (var task : completed) {
+                System.out.println("\t[" + task.getId() + "] " + task.getDescription());
+            }
         }
     }
 }

@@ -5,7 +5,8 @@ enum MenuOptions {
     NEW_TASK(1),
     UPDATE_STATUS_TASK(2),
     DELETE_TASK(3),
-    EXIT(4);
+    DELETE_COMPLETED(4),
+    EXIT(5);
 
     private final int value;
 
@@ -28,10 +29,11 @@ enum MenuOptions {
     }
 
     public static void printMenu() {
-        System.out.println("   1) New task");
-        System.out.println("   2) Update task");
-        System.out.println("   3) Delete task");
-        System.out.println("   4) Exit");
+        System.out.println("   1) Añadir una nueva tarea");
+        System.out.println("   2) Cambiar el estado de una tarea");
+        System.out.println("   3) Borrar una tarea");
+        System.out.println("   4) Limpiar las tareas completadas");
+        System.out.println("   5) Salir");
     }
 }
 
@@ -42,29 +44,37 @@ public class App {
     public static void main(String[] args) throws Exception {
         System.out.print("¡Hola, persona! ");
         var option = MenuOptions.EXIT;
+        Exception error = null;
 
-        while (option != MenuOptions.EXIT) {
-            clearScreen();
+
+        do {
+            if (error == null) {
+                clearScreen();
+            }
+            else {
+                System.err.println("\nSe ha producido un error. Motivo:");
+                System.err.println(error.getMessage() + "\n");
+            }
 
             if (!todolist.empty()) {
-                System.out.print("Esta es tu lista de tareas actual:\n");
+                System.out.println("Esta es tu lista de tareas actual:");
                 todolist.print();
             }
             else {
-                System.out.print("Todavía no tienes tareas pendientes.\n");
+                System.out.println("Todavía no tienes tareas pendientes.");
             }
 
-            System.out.println("¿Qué quieres hacer?\n");
+            System.out.println("\n¿Qué quieres hacer?");
             MenuOptions.printMenu();
 
             Scanner scan = new Scanner(System.in);
+            error = null;
 
             try {
                 option = MenuOptions.fromValue(scan.nextInt());
             }
             catch (InputMismatchException e) {
-                System.out.println("Opción inválida");
-                continue;
+                error = e;
             }
 
             switch (option) {
@@ -75,8 +85,7 @@ public class App {
                         updateStatusTask(scan);
                     }
                     catch (InputMismatchException e) {
-                        System.out.println("Se ha producido un error. Motivo:");
-                        System.out.println(e.getMessage());
+                        error = e;
                     }
                 }
 
@@ -85,12 +94,14 @@ public class App {
                         deleteTask(scan);
                     }
                     catch (InputMismatchException e) {
-                        System.out.println("Se ha producido un error. Motivo:");
-                        System.out.println(e.getMessage());
+                        error = e;
                     }
                 }
+
+                case DELETE_COMPLETED -> todolist.deleteCompleted();
+                case EXIT             -> System.out.println("¡Hasta luego!");
             }
-        }
+        } while (option != MenuOptions.EXIT);
     }
 
 
@@ -145,7 +156,7 @@ public class App {
             return todolist.delete(id);
         }
         catch (InputMismatchException e) {
-            throw e;
+            throw new InputMismatchException("No existe una tarea con ese ID");
         }
     }
 
