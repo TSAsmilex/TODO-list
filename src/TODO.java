@@ -1,118 +1,75 @@
-import java.util.ArrayList;
-
-enum Status {
-    PENDING (1),
-    STARTED (2),
-    COMPLETED (3);
-
-    private final int value;
-
-    private Status(int s) {
-        value = s;
-    }
-
-    public boolean equals(Status other) {
-        return value == other.value;
-    }
-
-    public static int minValue() {
-        return 1;
-    }
-    public static int maxValue() {
-        return 3;
-    }
-}
+import java.util.HashSet;
 
 
-// TODO cambiar las tres listas separadas por una única, de Task {String, Status}
 public class TODO {
-    ArrayList<String> pending   = new ArrayList<>();
-    ArrayList<String> completed = new ArrayList<>();
-    ArrayList<String> started   = new ArrayList<>();
+    HashSet<Task> tasks = new HashSet<Task>();
 
-
-    public void add (String task, Status status) {
-        switch (status) {
-            case PENDING -> pending.add(task);
-            case STARTED -> started.add(task);
-            case COMPLETED -> completed.add(task);
-        }
+    public void add (Task task) {
+        tasks.add(task);
     }
 
 
-    public void delete (int index, Status status) {
-        switch (status) {
-            case PENDING -> pending.remove(index);
-            case STARTED -> started.remove(index);
-            case COMPLETED -> completed.remove(index);
-        }
-    }
-
-
-    public void delete (int index) {
-        if (index < pending.size()) {
-            pending.remove(index);
-        }
-        else if (index < pending.size() + started.size()) {
-            started.remove(index - pending.size());
-        }
-        else if (index < pending.size() + started.size() + completed.size()) {
-            completed.remove(index - pending.size() - started.size());
-        }
+    public boolean delete (int id) {
+        return tasks.removeIf(task -> task.getId() == id);
     }
 
 
     public void deleteCompleted () {
-        completed.clear();
+        tasks.removeIf(tasks -> tasks.getStatus().equals(Status.COMPLETED));
     }
 
 
-    public void edit (int index, Status status, String task) {
-        switch (status) {
-            case PENDING -> pending.set(index, task);
-            case STARTED -> started.set(index, task);
-            case COMPLETED -> completed.set(index, task);
+    public boolean edit (int id, String description) {
+        for (Task task : tasks) {
+            if (task.getId() == id) {
+                task.setDescription(description);
+                return true;
+            }
         }
+
+        return false;
     }
 
-    public void modify(int index, Status status) {
 
+    public boolean updateStatus (int id, Status newStatus) {
+        for (var task: tasks) {
+            if (task.getId() == id) {
+                task.setStatus(newStatus);
+                return true;
+            }
+        }
+
+        return false;
     }
+
 
     public boolean empty() {
-        return total() == 0;
+        return tasks.isEmpty();
     }
 
-    public int total() {
-        return this.completed.size() + this.pending.size() + this.started.size();
+
+    public int size() {
+        return tasks.size();
     }
 
 
     public void print() {
-        int count = 0;
-
-        if (pending.size() > 0) {
-            System.out.println("Pending:");
-            for (int i = 0; i < pending.size(); i++) {
-                count++;
-                System.out.println("   [" + count + "] " + pending.get(i));
-            }
+        var pending = tasks.stream().filter(task -> task.getStatus().equals(Status.PENDING)).toList();
+        System.out.println("Pendientes: \n");
+        for (var task : pending) {
+            System.out.println("\t[" + task.getId() + "] " + task.getDescription());
         }
 
-        if (started.size() > 0) {
-            System.out.println("Started:");
-            for (int i = 0; i < started.size(); i++) {
-                count++;
-                System.out.println("\t[" + count + "] " + started.get(i));
-            }
+        var inProgress = tasks.stream().filter(task -> task.getStatus().equals(Status.INPROGRESS)).toList();
+        System.out.println("En progreso: \n");
+        for (var task : inProgress) {
+            System.out.println("\t[" + task.getId() + "] " + task.getDescription());
         }
 
-        if (completed.size() > 0) {
-            System.out.println("Completed:");
-            for (int i = 0; i < completed.size(); i++) {
-                count++;
-                System.out.println("\t[" + count + "] " + completed.get(i));
-            }
+        var completed = tasks.stream().filter(task -> task.getStatus().equals(Status.COMPLETED)).toList();
+        System.out.println("Completadas: \n");
+        for (var task : completed) {
+            System.out.println("\t[" + task.getId() + "] " + task.getDescription());
         }
     }
 }
